@@ -31,6 +31,7 @@ def get_file_info():
    f_info_dict["most_present_extension"] = max(f_info_dict["extension_counts_dict"], key=f_info_dict["extension_counts_dict"].get)
    return f_info_dict
 
+
 def file_info_log():
    files_info_dict = get_file_info()
    print(f"There are {files_info_dict.get('total_files')} files.")
@@ -99,16 +100,35 @@ def rename_files(new_filename):
       os.rename(os.path.join('.', file), os.path.join('.', ''.join(str(new_filename)+str(i))))
 
 
+def clean_filenames():
+   files = os.listdir()
+   files.remove(str(os.path.basename(__file__)))
+   for i,file in enumerate(files):
+      os.rename(os.path.join('.', file), os.path.join('.', file.capitalize().strip()))
+
+
+def upper_case_filenames():
+   files = os.listdir()
+   files.remove(str(os.path.basename(__file__)))
+   for i,file in enumerate(files):
+      os.rename(os.path.join('.', file), os.path.join('.', file.upper()))
+
+
 def main(argv):
    files = os.listdir()
    parser = argparse.ArgumentParser()
-   parser.add_argument("--csv2xlsx",action="store_true")
-   parser.add_argument("--mergefiles",action="store_true")
-   parser.add_argument("--replacefilenames",nargs=2,action="store",metavar=("<oldpart>", "<newpart>"))
-   parser.add_argument("--renamefiles",nargs=1, action="store",metavar="<newname>")
+   parser.add_argument("--csv2xlsx",action="store_true", help="Converts all csv files in xlsx")
+   parser.add_argument("--mergefiles",action="store_true", help="Merge all files with extension given (--ext) into one (--out).\
+                       If no extension is given it will merge the files which have the most present extension.\
+                       If extension is .csv it will merge them without keeping the header each time")
+   parser.add_argument("--uppercasefilenames",action="store_true", help="Convert all the filenames to uppercase")
+   parser.add_argument("--cleanfilenames",action="store_true", help="Clean all the filenames, removing spaces and capitalizing")
+   parser.add_argument("--replacefilenames",nargs=2,action="store",metavar=("<oldpart>", "<newpart>"), help="Given an <oldpart> of the filename, it will be replaced with a <newpart>.\
+                       This works for each filenames which contains the <oldpart>")
+   parser.add_argument("--renamefiles",nargs=1, action="store",metavar="<newname>", help="Rename all files with <newname> and ofc an index to differentiate the files")
    parser.add_argument("--ext",nargs=1,action="store",metavar="<extension>")
    parser.add_argument("--out",nargs=1,action="store",metavar="<output_name>")
-   parser.add_argument("--fileinfo",action="store_true")
+   parser.add_argument("--fileinfo",action="store_true", help="Print to the terminal some info about the files present in the current directory")
    
    args = parser.parse_args()
    args_dict = vars(args)
@@ -137,8 +157,14 @@ def main(argv):
    elif args_dict["renamefiles"]:
       new_name = args_dict.get("renamefiles")[0]
       rename_files(new_name)
+   elif args_dict["uppercasefilenames"]:
+      upper_case_filenames()
    elif args_dict["fileinfo"]:
       file_info_log()
+   elif args_dict["cleanfilenames"]:
+      clean_filenames()
+   else:
+      parser.print_help()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
